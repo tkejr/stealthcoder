@@ -24,7 +24,7 @@ const LeetCodeAnalysis = z.object({
   solution: z
     .string()
     .describe(
-      'Detailed solution to the problem in the language you see in the image, do not include any other text just the code. Make sure to add comments to the code to explain the logic.',
+      'Detailed solution to the problem in the language you see in the image, do not include any other text just the code. Make sure to add comments to the code to explain the logic. Make sure to follow the same language as the image and code function header and clas sheader if present shoudl be exactly same dont deviate form that',
     ),
   language: z
     .string()

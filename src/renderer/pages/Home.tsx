@@ -10,23 +10,56 @@ interface Analysis {
 
 function SkeletonLoader() {
   return (
-    <div
-      style={{
-        backgroundColor: '#2a2a2a',
-        borderRadius: '8px',
-        height: '150px',
-        animation: 'pulse 1.5s infinite',
-        marginBottom: '1rem',
-      }}
-    />
+    <div style={{ marginBottom: '1rem' }}>
+      {[1, 2, 3].map((line) => (
+        <div
+          key={line}
+          style={{
+            backgroundColor: '#2a2a2a',
+            borderRadius: '4px',
+            height: '24px',
+            marginBottom: '12px',
+            animation: 'pulse 1.5s infinite',
+            width: `${Math.floor(Math.random() * (95 - 70) + 70)}%`, // Random width between 70-95%
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
+// Add a helper function to handle local storage
+const getStoredState = () => {
+  try {
+    const storedAnalysis = localStorage.getItem('analysis');
+    const storedScreenshot = localStorage.getItem('screenshot');
+    return {
+      analysis: storedAnalysis ? JSON.parse(storedAnalysis) : null,
+      screenshot: storedScreenshot,
+    };
+  } catch (error) {
+    console.error('Error reading from localStorage:', error);
+    return { analysis: null, screenshot: null };
+  }
+};
+
 export default function Home() {
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  // Initialize state from localStorage
+  const { analysis: storedAnalysis, screenshot: storedScreenshot } = getStoredState();
+  const [analysis, setAnalysis] = useState<Analysis | null>(storedAnalysis);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [screenshot, setScreenshot] = useState<string | null>(storedScreenshot);
+
+  // Update localStorage when state changes
+  useEffect(() => {
+    if (analysis) {
+      localStorage.setItem('analysis', JSON.stringify(analysis));
+    }
+    if (screenshot) {
+      localStorage.setItem('screenshot', screenshot);
+    }
+  }, [analysis, screenshot]);
 
   const validateBase64 = (input: string) => {
     // Remove any whitespace and potential data URL prefix
@@ -64,7 +97,7 @@ export default function Home() {
         );
       }
 
-      setAnalysis(data); // Server now sends { thoughts, solution } directly
+      setAnalysis(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -85,15 +118,16 @@ export default function Home() {
       style={{
         backgroundColor: '#1a1a1a',
         minHeight: '100vh',
-        padding: '2rem',
+        padding: '1rem',
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         color: '#e1e1e1',
+        fontSize: '14px',
       }}
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {screenshot && (
-          <div style={{ marginBottom: '2rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
             <img
               src={screenshot}
               alt="Latest Screenshot"
@@ -107,53 +141,61 @@ export default function Home() {
         )}
 
         <div>
-          <h3
-            style={{
-              marginBottom: '1rem',
-              fontSize: '1.5rem',
-            }}
-          >
-            My Thoughts
-          </h3>
-          {loading && <SkeletonLoader />}
-          {!loading && analysis && (
-            <div style={{ marginBottom: '2rem' }}>
-              <div
+          {(loading || analysis) && (
+            <>
+              <h3
                 style={{
-                  margin: 0,
+                  marginBottom: '0.75rem',
+                  fontSize: '1.1rem',
+                  fontWeight: '500',
                   color: '#e1e1e1',
-                  lineHeight: '1.6',
                 }}
               >
-                {analysis.thoughts.map((thought: string) => (
+                My Thoughts
+              </h3>
+              {loading && <SkeletonLoader />}
+              {!loading && analysis && (
+                <div style={{ marginBottom: '1rem' }}>
                   <div
-                    key={`thought-${thought.slice(0, 10)}`}
-                    style={{ display: 'flex', marginBottom: '0.5rem' }}
+                    style={{
+                      margin: 0,
+                      color: '#e1e1e1',
+                      lineHeight: '1.4',
+                    }}
                   >
-                    <span style={{ marginRight: '0.5rem' }}>•</span>
-                    <span>{thought}</span>
+                    {analysis.thoughts.map((thought: string) => (
+                      <div
+                        key={`thought-${thought.slice(0, 10)}`}
+                        style={{ display: 'flex', marginBottom: '0.4rem' }}
+                      >
+                        <span style={{ marginRight: '0.5rem' }}>•</span>
+                        <span>{thought}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          <h3
-            style={{
-              marginBottom: '1rem',
-              fontSize: '1.5rem',
-            }}
-          >
-            Solution
-          </h3>
-          {loading && <SkeletonLoader />}
-          {!loading && analysis && (
-            <div>
-              <CodeRenderer
-                code={analysis.solution}
-                language={analysis.language}
-              />
-            </div>
+              <h3
+                style={{
+                  marginBottom: '0.75rem',
+                  fontSize: '1.1rem',
+                  fontWeight: '500',
+                  color: '#e1e1e1',
+                }}
+              >
+                Solution
+              </h3>
+              {loading && <SkeletonLoader />}
+              {!loading && analysis && (
+                <div>
+                  <CodeRenderer
+                    code={analysis.solution}
+                    language={analysis.language}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
 

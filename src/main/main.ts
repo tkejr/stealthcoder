@@ -49,9 +49,9 @@ if (process.env.NODE_ENV === 'production') {
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
-if (isDebug) {
-  require('electron-debug').default();
-}
+// if (isDebug) {
+//   require('electron-debug').default();
+// }
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -140,8 +140,8 @@ const createWindow = async (savedOpacity: number) => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 728,
+    height: 300,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -158,6 +158,9 @@ const createWindow = async (savedOpacity: number) => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+
+  mainWindow.setContentProtection(true);
+
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -197,6 +200,35 @@ const createWindow = async (savedOpacity: number) => {
       } else {
         mainWindow.show();
       }
+    }
+  });
+
+  // Add window movement shortcuts
+  globalShortcut.register('CommandOrControl+Left', () => {
+    if (mainWindow) {
+      const [x, y] = mainWindow.getPosition();
+      mainWindow.setPosition(x - 10, y);
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+Right', () => {
+    if (mainWindow) {
+      const [x, y] = mainWindow.getPosition();
+      mainWindow.setPosition(x + 10, y);
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+Up', () => {
+    if (mainWindow) {
+      const [x, y] = mainWindow.getPosition();
+      mainWindow.setPosition(x, y - 10);
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+Down', () => {
+    if (mainWindow) {
+      const [x, y] = mainWindow.getPosition();
+      mainWindow.setPosition(x, y + 10);
     }
   });
 
