@@ -80,4 +80,13 @@
   0% { opacity: 0.8; }
   70% { opacity: 0.8; }
   100% { opacity: 0; }
+}
+
+.shortcut-heading {
+  cursor: default;
+  pointer-events: none;
+}
+
+.shortcut-heading:hover {
+  background: transparent;
 } 

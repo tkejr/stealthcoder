@@ -34,7 +34,7 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
+let isClickThrough = false;
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
@@ -242,6 +242,13 @@ const createWindow = async (savedOpacity: number) => {
         .catch((error) => {
           console.error('Failed to clear localStorage:', error);
         });
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+I', () => {
+    if (mainWindow) {
+      isClickThrough = !isClickThrough;
+      mainWindow.setIgnoreMouseEvents(isClickThrough);
     }
   });
 
