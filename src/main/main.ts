@@ -79,6 +79,12 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
+    alwaysOnTop: true,
+    frame: false,
+    transparent: true,
+    skipTaskbar: true,
+    resizable: true,
+    movable: true,
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -110,6 +116,8 @@ const createWindow = async () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
+
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 };
 
 /**
