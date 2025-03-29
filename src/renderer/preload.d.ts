@@ -15,6 +15,13 @@ export interface ElectronHandler {
     capture: () => Promise<void>;
     onComplete: (callback: (path: string) => void) => void;
   };
+  windowControl: {
+    setOpacity: (value: number) => Promise<void>;
+  };
+  store: {
+    get: (key: string) => Promise<any>;
+    set: (key: string, value: any) => Promise<void>;
+  };
 }
 
 export {};

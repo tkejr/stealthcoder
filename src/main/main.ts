@@ -18,9 +18,10 @@ import {
   desktopCapturer,
   screen,
 } from 'electron';
+// @ts-ignore
+import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -67,7 +68,6 @@ const installExtensions = async () => {
 
 async function captureScreenshot(): Promise<string> {
   try {
-    // Get the display where the window is currently located
     if (!mainWindow) {
       throw new Error('Main window not found');
     }
@@ -83,7 +83,6 @@ async function captureScreenshot(): Promise<string> {
       },
     });
 
-    // Find the source that matches our display
     const displaySource = sources.find(
       (source) => source.display_id === currentDisplay.id.toString(),
     );
@@ -101,19 +100,12 @@ async function captureScreenshot(): Promise<string> {
     });
 
     const image = displaySource.thumbnail;
-
-    // Create filename
-    const downloadPath = app.getPath('downloads');
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filePath = path.join(downloadPath, `screenshot-${timestamp}.png`);
-
-    // Save the image using proper buffer write
-    fs.writeFileSync(filePath, image.toPNG());
+    const base64Image = image.toPNG().toString('base64');
 
     // Show window again
     mainWindow.show();
 
-    return filePath;
+    return base64Image;
   } catch (error) {
     console.error('Screenshot failed:', error);
     throw error;
@@ -122,18 +114,18 @@ async function captureScreenshot(): Promise<string> {
 
 ipcMain.handle('take-screenshot', async () => {
   try {
-    const filePath = await captureScreenshot();
+    const base64Image = await captureScreenshot();
     if (mainWindow) {
-      mainWindow.webContents.send('screenshot-complete', filePath);
+      mainWindow.webContents.send('screenshot-complete', base64Image);
     }
-    return filePath;
+    return base64Image;
   } catch (error) {
     console.error('Screenshot failed:', error);
     throw error;
   }
 });
 
-const createWindow = async () => {
+const createWindow = async (savedOpacity: number) => {
   if (isDebug) {
     await installExtensions();
   }
@@ -162,6 +154,7 @@ const createWindow = async () => {
     skipTaskbar: true,
     resizable: true,
     movable: true,
+    opacity: savedOpacity,
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -210,8 +203,8 @@ const createWindow = async () => {
   globalShortcut.register('CommandOrControl+H', async () => {
     if (mainWindow) {
       try {
-        const filePath = await captureScreenshot();
-        mainWindow.webContents.send('screenshot-complete', filePath);
+        const base64Image = await captureScreenshot();
+        mainWindow.webContents.send('screenshot-complete', base64Image);
       } catch (error) {
         console.error('Screenshot failed:', error);
       }
@@ -242,14 +235,30 @@ app.on('window-all-closed', () => {
   }
 });
 
+const store = new Store();
+
 app
   .whenReady()
   .then(() => {
-    createWindow();
+    const savedOpacity = store.get('window.opacity', 0.9) as number;
+    createWindow(savedOpacity);
+
     app.on('activate', () => {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) createWindow();
+      if (mainWindow === null) {
+        createWindow(store.get('window.opacity', 0.9) as number);
+      }
     });
   })
   .catch(console.log);
+
+// Handle set-opacity from renderer
+ipcMain.handle('set-opacity', (_event, value: number) => {
+  store.set('window.opacity', value);
+  if (mainWindow) {
+    mainWindow.setOpacity(value);
+  }
+});
+
+ipcMain.handle('get-opacity', () => {
+  return store.get('window.opacity', 0.9);
+});

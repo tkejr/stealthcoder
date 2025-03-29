@@ -24,8 +24,14 @@ const electronHandler = {
   },
   screenshot: {
     capture: () => ipcRenderer.invoke('take-screenshot'),
-    onComplete: (callback: (path: string) => void) => 
-      ipcRenderer.on('screenshot-complete', (_event, path) => callback(path)),
+    onComplete: (callback: (base64: string) => void) =>
+      ipcRenderer.on('screenshot-complete', (_event, base64) =>
+        callback(base64),
+      ),
+  },
+  windowControl: {
+    setOpacity: (value: number) => ipcRenderer.invoke('set-opacity', value),
+    getOpacity: () => ipcRenderer.invoke('get-opacity'),
   },
 };
 

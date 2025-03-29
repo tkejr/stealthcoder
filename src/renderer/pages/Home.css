@@ -1,0 +1,19 @@
+.analysis-container {
+  margin: 20px auto;
+  padding: 20px;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.analysis-container h2 {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #888;
+}
+
+.analysis-container p {
+  line-height: 1.5;
+  color: #333;
+} 

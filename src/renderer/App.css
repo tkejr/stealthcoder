@@ -3,18 +3,44 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 body {
-  position: relative;
-  color: white;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
-  font-family: sans-serif;
-  overflow-y: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   margin: 0;
-  -webkit-app-region: drag; /* Makes the window draggable */
-  padding-top: 40px; /* Add padding for control bar */
+  padding: 0;
+  height: 100vh;
+  background: transparent;
+  overflow: hidden;
+}
+
+.app-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-content {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.control-bar {
+  background: rgb(0, 0, 0);
+  z-index: 2;
+  backdrop-filter: blur(10px);
+}
+
+.content-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  padding-top: 58px; /* Same as control-bar height */
+}
+
+.content-area {
+  min-height: calc(100vh - 58px); /* Viewport height minus control-bar height */
+  padding: 20px;
+  background: #1a1a1a;
+  color: #fff;
+  box-sizing: border-box;
 }
 
 /* Make buttons and interactive elements not draggable */
@@ -55,12 +81,4 @@ a {
 a:hover {
   opacity: 1;
   text-decoration: none;
-}
-
-.Hello {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20px 0;
-  margin-top: 20px; /* Adjust margin to account for control bar */
 }
