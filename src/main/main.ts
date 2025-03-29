@@ -91,19 +91,8 @@ async function captureScreenshot(): Promise<string> {
       throw new Error('Display source not found');
     }
 
-    // Hide the main window temporarily for clean screenshot
-    mainWindow.hide();
-
-    // Wait a bit for window to hide
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 100);
-    });
-
     const image = displaySource.thumbnail;
     const base64Image = image.toPNG().toString('base64');
-
-    // Show window again
-    mainWindow.show();
 
     return base64Image;
   } catch (error) {
@@ -160,7 +149,6 @@ const createWindow = async (savedOpacity: number) => {
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.setContentProtection(true);
-
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -245,7 +233,15 @@ const createWindow = async (savedOpacity: number) => {
 
   globalShortcut.register('CommandOrControl+R', () => {
     if (mainWindow) {
-      mainWindow.webContents.reload();
+      // Clear localStorage
+      mainWindow.webContents.session
+        .clearStorageData({ storages: ['localstorage'] })
+        .then(() => {
+          mainWindow.webContents.reload();
+        })
+        .catch((error) => {
+          console.error('Failed to clear localStorage:', error);
+        });
     }
   });
 

@@ -45,7 +45,8 @@ const getStoredState = () => {
 
 export default function Home() {
   // Initialize state from localStorage
-  const { analysis: storedAnalysis, screenshot: storedScreenshot } = getStoredState();
+  const { analysis: storedAnalysis, screenshot: storedScreenshot } =
+    getStoredState();
   const [analysis, setAnalysis] = useState<Analysis | null>(storedAnalysis);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
