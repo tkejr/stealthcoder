@@ -22,6 +22,11 @@ const electronHandler = {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
+  screenshot: {
+    capture: () => ipcRenderer.invoke('take-screenshot'),
+    onComplete: (callback: (path: string) => void) => 
+      ipcRenderer.on('screenshot-complete', (_event, path) => callback(path)),
+  },
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

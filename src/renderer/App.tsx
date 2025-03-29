@@ -1,10 +1,12 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
+import ControlBar from './components/ControlBar';
 import './App.css';
 
 function Hello() {
   return (
     <div>
+      <ControlBar />
       <div className="Hello">
         <img width="200" alt="icon" src={icon} />
       </div>

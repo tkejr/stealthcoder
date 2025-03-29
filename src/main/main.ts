@@ -9,9 +9,18 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  globalShortcut,
+  desktopCapturer,
+  screen,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -55,6 +64,74 @@ const installExtensions = async () => {
     )
     .catch(console.log);
 };
+
+async function captureScreenshot(): Promise<string> {
+  try {
+    // Get the display where the window is currently located
+    if (!mainWindow) {
+      throw new Error('Main window not found');
+    }
+    const currentDisplay = screen.getDisplayNearestPoint(
+      mainWindow.getBounds(),
+    );
+
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: {
+        width: currentDisplay.size.width,
+        height: currentDisplay.size.height,
+      },
+    });
+
+    // Find the source that matches our display
+    const displaySource = sources.find(
+      (source) => source.display_id === currentDisplay.id.toString(),
+    );
+
+    if (!displaySource) {
+      throw new Error('Display source not found');
+    }
+
+    // Hide the main window temporarily for clean screenshot
+    mainWindow.hide();
+
+    // Wait a bit for window to hide
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 100);
+    });
+
+    const image = displaySource.thumbnail;
+
+    // Create filename
+    const downloadPath = app.getPath('downloads');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filePath = path.join(downloadPath, `screenshot-${timestamp}.png`);
+
+    // Save the image using proper buffer write
+    fs.writeFileSync(filePath, image.toPNG());
+
+    // Show window again
+    mainWindow.show();
+
+    return filePath;
+  } catch (error) {
+    console.error('Screenshot failed:', error);
+    throw error;
+  }
+}
+
+ipcMain.handle('take-screenshot', async () => {
+  try {
+    const filePath = await captureScreenshot();
+    if (mainWindow) {
+      mainWindow.webContents.send('screenshot-complete', filePath);
+    }
+    return filePath;
+  } catch (error) {
+    console.error('Screenshot failed:', error);
+    throw error;
+  }
+});
 
 const createWindow = async () => {
   if (isDebug) {
@@ -118,6 +195,39 @@ const createWindow = async () => {
   new AppUpdater();
 
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  // Register global shortcuts
+  globalShortcut.register('CommandOrControl+B', () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.hide();
+      } else {
+        mainWindow.show();
+      }
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+H', async () => {
+    if (mainWindow) {
+      try {
+        const filePath = await captureScreenshot();
+        mainWindow.webContents.send('screenshot-complete', filePath);
+      } catch (error) {
+        console.error('Screenshot failed:', error);
+      }
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+R', () => {
+    if (mainWindow) {
+      mainWindow.webContents.reload();
+    }
+  });
+
+  // Clean up shortcuts when app closes
+  app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
+  });
 };
 
 /**
