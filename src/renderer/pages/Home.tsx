@@ -1,4 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import CodeRenderer from '../components/CodeRenderer';
+
+// Add this before the component
+interface Analysis {
+  thoughts: string[];
+  solution: string;
+  language: string;
+}
 
 function SkeletonLoader() {
   return (
@@ -15,7 +23,7 @@ function SkeletonLoader() {
 }
 
 export default function Home() {
-  const [analysis, setAnalysis] = useState('');
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [screenshot, setScreenshot] = useState<string | null>(null);
@@ -39,7 +47,7 @@ export default function Home() {
 
       setLoading(true);
       setError('');
-      setAnalysis(''); // Clear previous analysis
+      setAnalysis(null); // Clear previous analysis
 
       const response = await fetch('http://localhost:3000/api/analyze-image', {
         method: 'POST',
@@ -56,7 +64,7 @@ export default function Home() {
         );
       }
 
-      setAnalysis(data.analysis);
+      setAnalysis(data); // Server now sends { thoughts, solution } directly
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -110,16 +118,23 @@ export default function Home() {
           {loading && <SkeletonLoader />}
           {!loading && analysis && (
             <div style={{ marginBottom: '2rem' }}>
-              <p
+              <div
                 style={{
-                  whiteSpace: 'pre-wrap',
                   margin: 0,
                   color: '#e1e1e1',
                   lineHeight: '1.6',
                 }}
               >
-                {analysis.split('\n\n')[0] || 'No thoughts available'}
-              </p>
+                {analysis.thoughts.map((thought: string) => (
+                  <div
+                    key={`thought-${thought.slice(0, 10)}`}
+                    style={{ display: 'flex', marginBottom: '0.5rem' }}
+                  >
+                    <span style={{ marginRight: '0.5rem' }}>•</span>
+                    <span>{thought}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -134,16 +149,10 @@ export default function Home() {
           {loading && <SkeletonLoader />}
           {!loading && analysis && (
             <div>
-              <p
-                style={{
-                  whiteSpace: 'pre-wrap',
-                  margin: 0,
-                  color: '#e1e1e1',
-                  lineHeight: '1.6',
-                }}
-              >
-                {analysis.split('\n\n')[1] || 'No solution available'}
-              </p>
+              <CodeRenderer
+                code={analysis.solution}
+                language={analysis.language}
+              />
             </div>
           )}
         </div>
