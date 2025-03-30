@@ -148,7 +148,7 @@ const createWindow = async (savedOpacity: number) => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
-  // mainWindow.setContentProtection(true);
+  mainWindow.setContentProtection(true);
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -236,9 +236,6 @@ const createWindow = async (savedOpacity: number) => {
       // Clear localStorage
       mainWindow.webContents.session
         .clearStorageData({ storages: ['localstorage'] })
-        .then(() => {
-          mainWindow.webContents.reload();
-        })
         .catch((error) => {
           console.error('Failed to clear localStorage:', error);
         });
