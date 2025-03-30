@@ -5,6 +5,9 @@ import './Settings.css';
 function Settings(): React.ReactElement {
   const navigate = useNavigate();
   const [opacity, setOpacity] = useState(0.9);
+  const [apiKey, setApiKey] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
     // Load saved opacity from main process
@@ -28,8 +31,44 @@ function Settings(): React.ReactElement {
     window.electron.windowControl.setOpacity(opacity);
   }, [opacity]);
 
+  useEffect(() => {
+    // @ts-ignore - API exists in runtime but not in type definitions
+    window.electron.api
+      .getOpenAIKey()
+      .then((key: string) => {
+        setApiKey(key || '');
+        return key;
+      })
+      .catch((error: Error) => {
+        console.error('Failed to get API key:', error);
+        return null;
+      });
+  }, []);
+
   const handleBack = () => {
     navigate('/');
+  };
+
+  const handleSaveApiKey = () => {
+    setIsSaving(true);
+    setSaveMessage('');
+
+    // @ts-ignore - API exists in runtime but not in type definitions
+    return window.electron.api
+      .setOpenAIKey(apiKey)
+      .then(() => {
+        setSaveMessage('API key saved successfully!');
+        setTimeout(() => setSaveMessage(''), 3000);
+        return true;
+      })
+      .catch((error: Error) => {
+        console.error('Failed to save API key:', error);
+        setSaveMessage('Failed to save API key');
+        return false;
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
   };
 
   return (
@@ -52,6 +91,30 @@ function Settings(): React.ReactElement {
             onChange={(e) => setOpacity(parseFloat(e.target.value))}
           />
           <span>{Math.round(opacity * 100)}%</span>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h3>OpenAI API Key</h3>
+        <div className="api-key-control">
+          <div className="input-with-button">
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Enter your OpenAI API key"
+              className="api-key-input"
+            />
+            <button
+              type="button"
+              onClick={handleSaveApiKey}
+              disabled={isSaving}
+              className="save-button"
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+          {saveMessage && <div className="save-message">{saveMessage}</div>}
         </div>
       </div>
     </div>

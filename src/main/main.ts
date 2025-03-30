@@ -148,7 +148,7 @@ const createWindow = async (savedOpacity: number) => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
-  mainWindow.setContentProtection(true);
+  // mainWindow.setContentProtection(true);
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -296,4 +296,14 @@ ipcMain.handle('set-opacity', (_event, value: number) => {
 
 ipcMain.handle('get-opacity', () => {
   return store.get('window.opacity', 0.9);
+});
+
+// Handle OpenAI API key
+ipcMain.handle('get-openai-key', () => {
+  return store.get('openai.apiKey', '');
+});
+
+ipcMain.handle('set-openai-key', (_, key: string) => {
+  store.set('openai.apiKey', key);
+  return true;
 });

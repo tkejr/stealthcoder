@@ -33,6 +33,10 @@ const electronHandler = {
     setOpacity: (value: number) => ipcRenderer.invoke('set-opacity', value),
     getOpacity: () => ipcRenderer.invoke('get-opacity'),
   },
+  api: {
+    getOpenAIKey: () => ipcRenderer.invoke('get-openai-key'),
+    setOpenAIKey: (key: string) => ipcRenderer.invoke('set-openai-key', key),
+  },
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

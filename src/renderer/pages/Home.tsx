@@ -79,6 +79,19 @@ export default function Home() {
         return;
       }
 
+      // Get the API key
+      const apiKey = await window.electron.api
+        ?.getOpenAIKey()
+        .catch((err: Error) => {
+          console.error('Failed to get API key:', err);
+          return null;
+        });
+      
+      if (!apiKey) {
+        setError('OpenAI API key not found. Please add it in settings.');
+        return;
+      }
+
       setLoading(true);
       setError('');
       setAnalysis(null); // Clear previous analysis
@@ -88,7 +101,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ base64Input: base64Data.trim() }),
+        body: JSON.stringify({
+          base64Input: base64Data.trim(),
+          apiKey,
+        }),
       });
 
       const data = await response.json();

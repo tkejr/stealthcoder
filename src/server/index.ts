@@ -7,7 +7,6 @@ import { zodResponseFormat } from 'openai/helpers/zod';
 
 dotenv.config();
 
-const openai = new OpenAI();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -19,7 +18,7 @@ const LeetCodeAnalysis = z.object({
   thoughts: z
     .array(z.string())
     .describe(
-      'Array of thoughts about solving this problem, each thought should be in first person like "I start by sorting the array" or "I use a hashmap to store the frequency of each number" Don\'t include basic thoughst they should be about the problem and the solution and very crisp about time complexity space complexity , think aboyut I will use this to answer to google engineers',
+      'Array of thoughts about solving this problem, each thought should be in first person like "I start by sorting the array" or "I use a hashmap to store the frequency of each number" Don\'t include basic thoughst they should be about the problem and the solution and very crisp about time complexity space complexity , think aboyut I will use this to answer to google engineers. Say like a human would using umm and normal thought process',
     ),
   solution: z
     .string()
@@ -36,7 +35,18 @@ const LeetCodeAnalysis = z.object({
 // Image analysis endpoint
 app.post('/api/analyze-image', async (req, res) => {
   try {
-    const { base64Input } = req.body;
+    const { base64Input, apiKey } = req.body;
+
+    if (!apiKey) {
+      return res.status(400).json({
+        error: 'OpenAI API key is required',
+        details: 'Please provide an API key in the settings',
+      });
+    }
+
+    const openai = new OpenAI({
+      apiKey,
+    });
 
     if (!base64Input) {
       return res.status(400).json({ error: 'No base64 data provided' });
