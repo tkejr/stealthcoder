@@ -34,6 +34,13 @@ function ControlBar() {
           className="control-item shortcut-heading"
           style={{ cursor: 'default', pointerEvents: 'none' }}
         >
+          <span className="shortcut">⌘G</span>
+          <span className="label">Stealth Mode</span>
+        </div>
+        <div
+          className="control-item shortcut-heading"
+          style={{ cursor: 'default', pointerEvents: 'none' }}
+        >
           <span className="shortcut">⌘B</span>
           <span className="label">Show/Hide</span>
         </div>

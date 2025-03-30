@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import CodeRenderer from '../components/CodeRenderer';
+import Notification from '../components/Notification';
 
 // Add this before the component
 interface Analysis {
@@ -130,115 +131,118 @@ export default function Home() {
   }, [handleAnalyze]);
 
   return (
-    <div
-      className="content-area"
-      style={{
-        backgroundColor: '#1a1a1a',
-        minHeight: '100vh',
-        padding: '1rem',
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        color: '#e1e1e1',
-        fontSize: '14px',
-      }}
-    >
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {screenshot && (
-          <div style={{ marginBottom: '1rem' }}>
-            <img
-              src={screenshot}
-              alt="Latest Screenshot"
-              style={{
-                maxWidth: '10%',
-                borderRadius: '8px',
-                border: '1px solid #404040',
-              }}
-            />
-          </div>
-        )}
-
-        <div>
-          {(loading || analysis) && (
-            <>
-              <h3
+    <div className="content-area" style={{ position: 'relative' }}>
+      <Notification />
+      <div
+        className="content-area"
+        style={{
+          backgroundColor: '#1a1a1a',
+          minHeight: '100vh',
+          padding: '1rem',
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          color: '#e1e1e1',
+          fontSize: '14px',
+        }}
+      >
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {screenshot && (
+            <div style={{ marginBottom: '1rem' }}>
+              <img
+                src={screenshot}
+                alt="Latest Screenshot"
                 style={{
-                  marginBottom: '0.75rem',
-                  fontSize: '1.1rem',
-                  fontWeight: '500',
-                  color: '#e1e1e1',
+                  maxWidth: '10%',
+                  borderRadius: '8px',
+                  border: '1px solid #404040',
                 }}
-              >
-                My Thoughts
-              </h3>
-              {loading && <SkeletonLoader />}
-              {!loading && analysis && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <div
-                    style={{
-                      margin: 0,
-                      color: '#e1e1e1',
-                      lineHeight: '1.4',
-                    }}
-                  >
-                    {analysis.thoughts.map((thought: string) => (
-                      <div
-                        key={`thought-${thought.slice(0, 10)}`}
-                        style={{ display: 'flex', marginBottom: '0.4rem' }}
-                      >
-                        <span style={{ marginRight: '0.5rem' }}>•</span>
-                        <span>{thought}</span>
-                      </div>
-                    ))}
+              />
+            </div>
+          )}
+
+          <div>
+            {(loading || analysis) && (
+              <>
+                <h3
+                  style={{
+                    marginBottom: '0.75rem',
+                    fontSize: '1.1rem',
+                    fontWeight: '500',
+                    color: '#e1e1e1',
+                  }}
+                >
+                  My Thoughts
+                </h3>
+                {loading && <SkeletonLoader />}
+                {!loading && analysis && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div
+                      style={{
+                        margin: 0,
+                        color: '#e1e1e1',
+                        lineHeight: '1.4',
+                      }}
+                    >
+                      {analysis.thoughts.map((thought: string) => (
+                        <div
+                          key={`thought-${thought.slice(0, 10)}`}
+                          style={{ display: 'flex', marginBottom: '0.4rem' }}
+                        >
+                          <span style={{ marginRight: '0.5rem' }}>•</span>
+                          <span>{thought}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <h3
-                style={{
-                  marginBottom: '0.75rem',
-                  fontSize: '1.1rem',
-                  fontWeight: '500',
-                  color: '#e1e1e1',
-                }}
-              >
-                Solution
-              </h3>
-              {loading && <SkeletonLoader />}
-              {!loading && analysis && (
-                <div>
-                  <CodeRenderer
-                    code={analysis.solution}
-                    language={analysis.language}
-                  />
-                </div>
-              )}
-            </>
+                <h3
+                  style={{
+                    marginBottom: '0.75rem',
+                    fontSize: '1.1rem',
+                    fontWeight: '500',
+                    color: '#e1e1e1',
+                  }}
+                >
+                  Solution
+                </h3>
+                {loading && <SkeletonLoader />}
+                {!loading && analysis && (
+                  <div>
+                    <CodeRenderer
+                      code={analysis.solution}
+                      language={analysis.language}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {error && (
+            <div
+              style={{
+                backgroundColor: '#2c1518',
+                color: '#ff8a8a',
+                padding: '1rem',
+                borderRadius: '8px',
+                marginTop: '1rem',
+                border: '1px solid #4a1f23',
+              }}
+            >
+              {error}
+            </div>
           )}
         </div>
 
-        {error && (
-          <div
-            style={{
-              backgroundColor: '#2c1518',
-              color: '#ff8a8a',
-              padding: '1rem',
-              borderRadius: '8px',
-              marginTop: '1rem',
-              border: '1px solid #4a1f23',
-            }}
-          >
-            {error}
-          </div>
-        )}
+        <style>{`
+          @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+          }
+        `}</style>
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0% { opacity: 0.6; }
-          50% { opacity: 1; }
-          100% { opacity: 0.6; }
-        }
-      `}</style>
     </div>
   );
 }

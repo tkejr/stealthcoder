@@ -37,6 +37,10 @@ const electronHandler = {
     getOpenAIKey: () => ipcRenderer.invoke('get-openai-key'),
     setOpenAIKey: (key: string) => ipcRenderer.invoke('set-openai-key', key),
   },
+  notifications: {
+    onNotification: (callback: (message: string) => void) => 
+      ipcRenderer.on('show-notification', (_event, message) => callback(message))
+  }
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

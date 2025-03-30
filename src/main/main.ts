@@ -35,6 +35,7 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 let isClickThrough = false;
+let isStealthMode = false;
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
@@ -148,8 +149,6 @@ const createWindow = async (savedOpacity: number) => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
-  mainWindow.setContentProtection(true);
-
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -185,8 +184,10 @@ const createWindow = async (savedOpacity: number) => {
     if (mainWindow) {
       if (mainWindow.isVisible()) {
         mainWindow.hide();
+        mainWindow.webContents.send('show-notification', 'Window Hidden');
       } else {
         mainWindow.show();
+        mainWindow.webContents.send('show-notification', 'Window Visible');
       }
     }
   });
@@ -236,6 +237,9 @@ const createWindow = async (savedOpacity: number) => {
       // Clear localStorage
       mainWindow.webContents.session
         .clearStorageData({ storages: ['localstorage'] })
+        .then(() => {
+          mainWindow?.reload();
+        })
         .catch((error) => {
           console.error('Failed to clear localStorage:', error);
         });
@@ -246,6 +250,21 @@ const createWindow = async (savedOpacity: number) => {
     if (mainWindow) {
       isClickThrough = !isClickThrough;
       mainWindow.setIgnoreMouseEvents(isClickThrough);
+      mainWindow.webContents.send(
+        'show-notification',
+        isClickThrough ? 'Click-through Enabled' : 'Click-through Disabled',
+      );
+    }
+  });
+
+  globalShortcut.register('CommandOrControl+G', () => {
+    if (mainWindow) {
+      isStealthMode = !isStealthMode;
+      mainWindow.setContentProtection(isStealthMode);
+      mainWindow.webContents.send(
+        'show-notification',
+        isStealthMode ? 'Stealth Mode Enabled' : 'Stealth Mode Disabled',
+      );
     }
   });
 
