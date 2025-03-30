@@ -31,7 +31,7 @@ npm install
 
 3. **Start development**
 ```bash
-npm start
+npm run dev
 ```
 
 ## 🏗️ Building for Production
@@ -50,13 +50,6 @@ npm run package
 - [React Router](https://reactrouter.com) - Navigation
 - [React Fast Refresh](https://www.npmjs.com/package/react-refresh) - Hot reloading
 
-## 📖 Documentation
-
-For detailed documentation and guides, check out our [documentation](docs/README.md).
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📝 License
 
